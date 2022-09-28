@@ -45,7 +45,7 @@ pub fn read_window_info(window: &winit::window::Window, pixels_per_point: f32) -
 }
 
 pub fn window_builder(
-    native_options: &epi::NativeOptions,
+    native_options: &mut epi::NativeOptions,
     window_settings: &Option<WindowSettings>,
 ) -> winit::window::WindowBuilder {
     let epi::NativeOptions {
@@ -63,6 +63,7 @@ pub fn window_builder(
         max_window_size,
         resizable,
         transparent,
+        window_builder: window_builder_hook,
         ..
     } = native_options;
 
@@ -106,6 +107,10 @@ pub fn window_builder(
         if let Some(initial_window_size) = *initial_window_size {
             window_builder = window_builder.with_inner_size(points_to_size(initial_window_size));
         }
+    }
+
+    if let Some(hook) = std::mem::take(window_builder_hook) {
+        window_builder = hook(window_builder);
     }
 
     window_builder

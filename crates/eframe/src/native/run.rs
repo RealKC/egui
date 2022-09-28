@@ -314,7 +314,7 @@ mod glow_integration {
             event_loop: &EventLoopWindowTarget<RequestRepaintEvent>,
             storage: Option<&dyn epi::Storage>,
             title: &String,
-            native_options: &NativeOptions,
+            native_options: &mut NativeOptions,
         ) -> (
             glutin::WindowedContext<glutin::PossiblyCurrent>,
             glow::Context,
@@ -360,7 +360,7 @@ mod glow_integration {
                 event_loop,
                 storage.as_deref(),
                 &self.app_name,
-                &self.native_options,
+                &mut self.native_options,
             );
             let gl = Arc::new(gl);
 
@@ -685,10 +685,10 @@ mod wgpu_integration {
             event_loop: &EventLoopWindowTarget<RequestRepaintEvent>,
             storage: Option<&dyn epi::Storage>,
             title: &String,
-            native_options: &NativeOptions,
+            native_options: &mut NativeOptions,
         ) -> winit::window::Window {
             let window_settings = epi_integration::load_window_settings(storage);
-            epi_integration::window_builder(native_options, &window_settings)
+            epi_integration::window_builder(&mut native_options, &window_settings)
                 .with_title(title)
                 .build(event_loop)
                 .unwrap()
@@ -910,7 +910,7 @@ mod wgpu_integration {
                                 event_loop,
                                 running.integration.frame.storage(),
                                 &self.app_name,
-                                &self.native_options,
+                                &mut self.native_options,
                             );
                             self.set_window(window);
                         }
@@ -920,7 +920,7 @@ mod wgpu_integration {
                             event_loop,
                             storage.as_deref(),
                             &self.app_name,
-                            &self.native_options,
+                            &mut self.native_options,
                         );
                         self.init_run_state(event_loop, storage, window);
                     }

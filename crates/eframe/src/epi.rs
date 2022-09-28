@@ -12,7 +12,7 @@ use std::any::Any;
 #[cfg(not(target_arch = "wasm32"))]
 pub use crate::native::run::RequestRepaintEvent;
 #[cfg(not(target_arch = "wasm32"))]
-pub use winit::event_loop::EventLoopBuilder;
+pub use winit::{event_loop::EventLoopBuilder, window::WindowBuilder};
 
 /// Hook into the building of an event loop before it is run
 ///
@@ -20,6 +20,13 @@ pub use winit::event_loop::EventLoopBuilder;
 /// done by `EFrame`.
 #[cfg(not(target_arch = "wasm32"))]
 pub type EventLoopBuilderHook = Box<dyn FnOnce(&mut EventLoopBuilder<RequestRepaintEvent>)>;
+
+/// Hook into the building of a window
+///
+/// You can configure any platform specific details required on top of the default configuration
+/// done by eframe
+#[cfg(not(target_arch = "wasm32"))]
+pub type WindowBuilderHook = Box<dyn FnOnce(WindowBuilder) -> WindowBuilder>;
 
 /// This is how your app is created.
 ///
@@ -346,6 +353,14 @@ pub struct NativeOptions {
     /// Note: A [`NativeOptions`] clone will not include any `event_loop_builder` hook.
     pub event_loop_builder: Option<EventLoopBuilderHook>,
 
+    /// Hook into the building of an eframe window.
+    ///
+    /// Specify a callback here in case you need to make platform specific changes to the
+    /// window before it is created.
+    ///
+    /// Noyte: A [`NativeOptions`] clone will not include any `window_builder` hook.
+    pub window_builder: Option<WindowBuilderHook>,
+
     #[cfg(feature = "glow")]
     /// Needed for cross compiling for VirtualBox VMSVGA driver with OpenGL ES 2.0 and OpenGL 2.1 which doesn't support SRGB texture.
     /// See <https://github.com/emilk/egui/pull/1993>.
@@ -367,6 +382,7 @@ impl Clone for NativeOptions {
         Self {
             icon_data: self.icon_data.clone(),
             event_loop_builder: None, // Skip any builder callbacks if cloning
+            window_builder: None,
             ..*self
         }
     }
@@ -399,6 +415,7 @@ impl Default for NativeOptions {
             default_theme: Theme::Dark,
             run_and_return: true,
             event_loop_builder: None,
+            window_builder: None,
             #[cfg(feature = "glow")]
             shader_version: None,
             centered: false,
